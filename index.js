@@ -2,7 +2,7 @@ const express = require("express");
 const fs = require("fs").promises;
 const cors = require("cors");
 const path = require("path");
-const { deflate } = require("zlib");
+
 const emailFilePath = path.join("/tmp", "email.txt");
 
 const app = express();
@@ -42,10 +42,7 @@ async function checkEmailExists(newEmail) {
     const lines = fileContent.split("\n").filter((line) => line.trim());
     for (const line of lines) {
       const existingEmail = extractEmail(line);
-      if (
-        existingEmail &&
-        existingEmail.toLowerCase() === newEmail.toLowerCase()
-      ) {
+      if (existingEmail && existingEmail.toLowerCase() === newEmail.toLowerCase()) {
         return true;
       }
     }
@@ -88,6 +85,7 @@ app.get("/api/emails", async (req, res) => {
     const content = await fs.readFile(emailFilePath, "utf-8");
     res.send(content);
   } catch (error) {
+    console.error("Erreur lors de la lecture des emails:", error);
     res.status(500).json({ error: "Erreur lors de la lecture des emails" });
   }
 });
