@@ -15,6 +15,8 @@ app.use(
       "https://minima-back.vercel.app",
       "https://minima-front-uni.vercel.app/",
       "https://minima-front-uni.vercel.app",
+      "https://www.myminima.fr/",
+      "https://www.myminima.fr",
     ],
     credentials: true,
     exposedHeaders: ["set-cookie"],
