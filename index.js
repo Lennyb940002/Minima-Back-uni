@@ -15,7 +15,10 @@ mongoose.connect(process.env.MONGODB_URI, {
   useCreateIndex: true,
 })
 .then(() => console.log('Connected to MongoDB'))
-.catch(err => console.error('MongoDB connection error:', err));
+.catch(err => {
+  console.error('MongoDB connection error:', err);
+  process.exit(1); // Exit the process if unable to connect to MongoDB
+});
 
 app.use(cors({
   origin: [
@@ -46,7 +49,7 @@ app.post('/api/emails', async (req, res) => {
     res.json({ success: true, message: 'Email enregistré avec succès' });
   } catch (error) {
     console.error('Erreur lors de l\'enregistrement de l\'email:', error);
-    res.status(500).json({ error: 'Erreur lors de l\'enregistrement de l\'email', detail: error });
+    res.status(500).json({ error: 'Erreur lors de l\'enregistrement de l\'email', detail: error.message });
   }
 });
 
@@ -56,7 +59,7 @@ app.get('/api/emails', async (req, res) => {
     res.json(emails);
   } catch (error) {
     console.error('Erreur lors de la lecture des emails:', error);
-    res.status(500).json({ error: 'Erreur lors de la lecture des emails' });
+    res.status(500).json({ error: 'Erreur lors de la lecture des emails', detail: error.message });
   }
 });
 
