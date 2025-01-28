@@ -1,79 +1,76 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
-const Email = require('./models/Email'); // Ensure this path is correct
-require('dotenv').config();
+const dotenv = require('dotenv');
+const Email = require('./models/Email'); // Modèle Email
+
+dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-console.log('Starting server...');
+// Middleware
+app.use(express.json());
+app.use(cors({
+  origin: [
+    "https://www.myminima.fr",
+    "http://www.myminima.fr",
+    "https://www.minima-front-uni.vercel.app",
+  ],
+  credentials: true,
+}));
 
-// Connect to MongoDB
+// Connexion MongoDB
 mongoose.connect(process.env.MONGODB_URI, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
-  useCreateIndex: true,
-})
-.then(() => console.log('Connected to MongoDB'))
-.catch(err => {
-  console.error('MongoDB connection error:', err);
-  process.exit(1); // Exit the process if unable to connect to MongoDB
+}).then(() => {
+  console.log('✅ Connecté à MongoDB');
+}).catch((err) => {
+  console.error('❌ Erreur de connexion à MongoDB :', err.message);
+  process.exit(1);
 });
 
-// CORS configuration
-app.use(cors({
-  origin: ["https://www.myminima.fr", "http://www.myminima.fr", "https://www.minima-front-uni.vercel.app"], // Update this to your frontend URL
-  credentials: true,
-  exposedHeaders: ["set-cookie"],
-}));
-app.use(express.json());
-
-console.log('Middleware setup complete.');
-
-// Routes
+// Routes API
 app.post('/api/emails', async (req, res) => {
-  console.log('POST /api/emails called');
   try {
     const { email } = req.body;
-    console.log('Received email:', email);
 
     if (!email || !email.includes('@')) {
-      console.error('Invalid email:', email);
       return res.status(400).json({ error: 'Email invalide' });
     }
 
-    const emailExists = await Email.findOne({ email });
-    if (emailExists) {
-      console.error('Email already exists:', email);
+    const existingEmail = await Email.findOne({ email });
+    if (existingEmail) {
       return res.status(409).json({ error: 'Cet email est déjà inscrit' });
     }
 
     const newEmail = new Email({ email });
     await newEmail.save();
-    console.log('Email saved:', newEmail);
 
-    res.json({ success: true, message: 'Email enregistré avec succès' });
+    return res.status(201).json({ message: 'Email enregistré avec succès' });
   } catch (error) {
-    console.error('Error registering email:', error);
-    res.status(500).json({ error: 'Erreur lors de l\'enregistrement de l\'email', detail: error.message });
+    console.error('Erreur dans POST /api/emails :', error.message);
+    res.status(500).json({ error: 'Erreur serveur', detail: error.message });
   }
 });
 
 app.get('/api/emails', async (req, res) => {
-  console.log('GET /api/emails called');
   try {
     const emails = await Email.find().sort({ createdAt: -1 });
-    console.log('Fetched emails:', emails);
-    res.json(emails);
+    res.status(200).json(emails);
   } catch (error) {
-    console.error('Error fetching emails:', error);
-    res.status(500).json({ error: 'Erreur lors de la lecture des emails', detail: error.message });
+    console.error('Erreur dans GET /api/emails :', error.message);
+    res.status(500).json({ error: 'Erreur serveur', detail: error.message });
   }
 });
 
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+// Endpoint de test (santé de l'API)
+app.get('/api/ping', (req, res) => {
+  res.json({ message: 'API is working!' });
 });
 
-module.exports = app;
+// Démarrage du serveur
+app.listen(PORT, () => {
+  console.log(`🚀 Serveur en cours d’exécution sur le port ${PORT}`);
+});
