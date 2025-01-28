@@ -1,7 +1,7 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
-const Email = require('./models/Email'); // Assurez-vous que ce chemin est correct
+const Email = require('./models/Email'); // Ensure this path is correct
 require('dotenv').config();
 
 const app = express();
@@ -9,7 +9,7 @@ const PORT = process.env.PORT || 3000;
 
 console.log('Starting server...');
 
-// Connexion à MongoDB
+// Connect to MongoDB
 mongoose.connect(process.env.MONGODB_URI, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
@@ -52,7 +52,7 @@ app.post('/api/emails', async (req, res) => {
 
     const newEmail = new Email({ email });
     await newEmail.save();
-    console.log('Email saved:', email);
+    console.log('Email saved:', newEmail);
 
     res.json({ success: true, message: 'Email enregistré avec succès' });
   } catch (error) {
