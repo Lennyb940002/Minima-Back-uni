@@ -1,75 +1,92 @@
-const express = require('express');
-const mongoose = require('mongoose');
-const cors = require('cors');
-const dotenv = require('dotenv');
-const Email = require('./models/Email'); // Modèle Email
+import React, { useState } from "react";
 
-dotenv.config();
+function App() {
+  const [email, setEmail] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitStatus, setSubmitStatus] = useState(null);
+  const [errorMessage, setErrorMessage] = useState("");
 
-const app = express();
-const PORT = process.env.PORT || 3000;
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    setErrorMessage("");
+    setSubmitStatus(null);
 
-// Middleware CORS
-app.use(cors({
-  origin: [
-    "https://www.myminima.fr", // Domaine frontend
-    "http://www.myminima.fr", // Variante HTTP
-    "https://www.minima-front-uni.vercel.app" // Domaine Vercel
-  ],
-  credentials: true, // Si vous envoyez des cookies
-}));
+    try {
+      // Enlever le slash à la fin si présent
+      const backendUrl = import.meta.env.VITE_BACKEND_URL.replace(/\/$/, '');
+      const response = await fetch(`${backendUrl}/api/emails`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
 
-// Connexion MongoDB
-mongoose.connect(process.env.MONGODB_URI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-}).then(() => {
-  console.log('✅ Connecté à MongoDB');
-}).catch((err) => {
-  console.error('❌ Erreur de connexion à MongoDB :', err.message);
-  process.exit(1);
-});
+      if (!response.ok) {
+        const data = await response.json();
+        if (response.status === 409) {
+          setErrorMessage(data.error || "Cet email est déjà inscrit.");
+        } else {
+          setErrorMessage("Une erreur est survenue. Veuillez réessayer.");
+        }
+        setSubmitStatus("error");
+        return;
+      }
 
-// Routes API
-app.post('/emails', async (req, res) => {
-  try {
-    const { email } = req.body;
-
-    if (!email || !email.includes('@')) {
-      return res.status(400).json({ error: 'Email invalide' });
+      setSubmitStatus("success");
+      setEmail("");
+    } catch (error) {
+      setErrorMessage("Erreur de connexion avec le serveur.");
+      setSubmitStatus("error");
+    } finally {
+      setIsSubmitting(false);
     }
+  };
 
-    const existingEmail = await Email.findOne({ email });
-    if (existingEmail) {
-      return res.status(409).json({ error: 'Cet email est déjà inscrit' });
-    }
+  return (
+    <div style={{ padding: "2rem", fontFamily: "Arial, sans-serif" }}>
+      <h1>Inscription à la Newsletter</h1>
+      <form onSubmit={handleSubmit} style={{ maxWidth: "400px", margin: "0 auto" }}>
+        <div style={{ marginBottom: "1rem" }}>
+          <label htmlFor="email">Email :</label>
+          <input
+            type="email"
+            id="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+            style={{
+              width: "100%",
+              padding: "0.5rem",
+              marginTop: "0.5rem",
+              borderRadius: "4px",
+              border: "1px solid #ccc",
+            }}
+          />
+        </div>
+        <button
+          type="submit"
+          disabled={isSubmitting}
+          style={{
+            padding: "0.5rem 1rem",
+            background: "#007bff",
+            color: "#fff",
+            border: "none",
+            borderRadius: "4px",
+            cursor: "pointer",
+          }}
+        >
+          {isSubmitting ? "Chargement..." : "S'inscrire"}
+        </button>
+      </form>
 
-    const newEmail = new Email({ email });
-    await newEmail.save();
+      {submitStatus === "success" && (
+        <p style={{ color: "green", marginTop: "1rem" }}>Inscription réussie !</p>
+      )}
+      {submitStatus === "error" && (
+        <p style={{ color: "red", marginTop: "1rem" }}>{errorMessage}</p>
+      )}
+    </div>
+  );
+}
 
-    return res.status(201).json({ message: 'Email enregistré avec succès' });
-  } catch (error) {
-    console.error('Erreur dans POST /api/emails :', error.message);
-    res.status(500).json({ error: 'Erreur serveur', detail: error.message });
-  }
-});
-
-app.get('/emails', async (req, res) => {
-  try {
-    const emails = await Email.find().sort({ createdAt: -1 });
-    res.status(200).json(emails);
-  } catch (error) {
-    console.error('Erreur dans GET /api/emails :', error.message);
-    res.status(500).json({ error: 'Erreur serveur', detail: error.message });
-  }
-});
-
-// Endpoint de test (santé de l'API)
-app.get('/api/ping', (req, res) => {
-  res.json({ message: 'API is working!' });
-});
-
-// Démarrage du serveur
-app.listen(PORT, () => {
-  console.log(`🚀 Serveur en cours d’exécution sur le port ${PORT}`);
-});
+export default App;
