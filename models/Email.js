@@ -1,19 +1,16 @@
-// models/Email.js
 const mongoose = require('mongoose');
 
 const emailSchema = new mongoose.Schema({
   email: {
     type: String,
-    required: true,
+    required: [true, 'L’email est obligatoire'],
     unique: true,
-    match: [/.+\@.+\..+/, 'Veuillez saisir un email valide']
+    match: [/.+\@.+\..+/, 'Veuillez entrer un email valide'],
   },
   createdAt: {
     type: Date,
-    default: Date.now
-  }
+    default: Date.now,
+  },
 });
 
-const Email = mongoose.model('Email', emailSchema);
-
-module.exports = Email;
+module.exports = mongoose.model('Email', emailSchema);
