@@ -21,10 +21,9 @@ mongoose.connect(process.env.MONGODB_URI, {
   process.exit(1); // Exit the process if unable to connect to MongoDB
 });
 
+// CORS configuration
 app.use(cors({
-  origin: ["https://www.myminima.fr",
-          "https://www.myminima.fr/",
-          ]
+  origin: 'https://www.myminima.fr', // Update this to your frontend URL
   credentials: true,
   exposedHeaders: ["set-cookie"],
 }));
