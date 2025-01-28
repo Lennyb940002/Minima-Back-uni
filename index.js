@@ -22,7 +22,9 @@ mongoose.connect(process.env.MONGODB_URI, {
 });
 
 app.use(cors({
-  origin: 'https://www.myminima.fr',
+  origin: ["https://www.myminima.fr",
+          "https://www.myminima.fr/",
+          ]
   credentials: true,
   exposedHeaders: ["set-cookie"],
 }));
