@@ -9,15 +9,14 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Middleware
-app.use(express.json());
+// Middleware CORS
 app.use(cors({
   origin: [
-    "https://www.myminima.fr",
-    "http://www.myminima.fr",
-    "https://www.minima-front-uni.vercel.app",
+    "https://www.myminima.fr", // Domaine frontend
+    "http://www.myminima.fr", // Variante HTTP
+    "https://www.minima-front-uni.vercel.app" // Domaine Vercel
   ],
-  credentials: true,
+  credentials: true, // Si vous envoyez des cookies
 }));
 
 // Connexion MongoDB
