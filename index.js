@@ -1,13 +1,13 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
-const Email = require('./models/Email'); // Ensure this path is correct
+const Email = require('./models/Email');
 require('dotenv').config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Connexion à MongoDB
+// Connect to MongoDB
 mongoose.connect(process.env.MONGODB_URI, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
@@ -34,21 +34,21 @@ app.post('/api/emails', async (req, res) => {
     const { email } = req.body;
 
     if (!email || !email.includes('@')) {
-      return res.status(400).json({ error: 'Email invalide' });
+      return res.status(400).json({ error: 'Invalid email' });
     }
 
     const emailExists = await Email.findOne({ email });
     if (emailExists) {
-      return res.status(409).json({ error: 'Cet email est déjà inscrit' });
+      return res.status(409).json({ error: 'This email is already registered' });
     }
 
     const newEmail = new Email({ email });
     await newEmail.save();
 
-    res.json({ success: true, message: 'Email enregistré avec succès' });
+    res.json({ success: true, message: 'Email successfully registered' });
   } catch (error) {
-    console.error('Erreur lors de l\'enregistrement de l\'email:', error);
-    res.status(500).json({ error: 'Erreur lors de l\'enregistrement de l\'email', detail: error.message });
+    console.error('Error registering email:', error);
+    res.status(500).json({ error: 'Error registering email', detail: error.message });
   }
 });
 
@@ -57,8 +57,8 @@ app.get('/api/emails', async (req, res) => {
     const emails = await Email.find().sort({ createdAt: -1 });
     res.json(emails);
   } catch (error) {
-    console.error('Erreur lors de la lecture des emails:', error);
-    res.status(500).json({ error: 'Erreur lors de la lecture des emails', detail: error.message });
+    console.error('Error fetching emails:', error);
+    res.status(500).json({ error: 'Error fetching emails', detail: error.message });
   }
 });
 
