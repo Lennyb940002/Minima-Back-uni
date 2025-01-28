@@ -23,7 +23,7 @@ mongoose.connect(process.env.MONGODB_URI, {
 
 // CORS configuration
 app.use(cors({
-  origin: 'https://www.myminima.fr', // Update this to your frontend URL
+  origin: ["https://www.myminima.fr"], // Update this to your frontend URL
   credentials: true,
   exposedHeaders: ["set-cookie"],
 }));
