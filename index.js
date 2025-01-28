@@ -31,7 +31,7 @@ mongoose.connect(process.env.MONGODB_URI, {
 });
 
 // Routes API
-app.post('/api/emails', async (req, res) => {
+app.post('/emails', async (req, res) => {
   try {
     const { email } = req.body;
 
@@ -54,7 +54,7 @@ app.post('/api/emails', async (req, res) => {
   }
 });
 
-app.get('/api/emails', async (req, res) => {
+app.get('/emails', async (req, res) => {
   try {
     const emails = await Email.find().sort({ createdAt: -1 });
     res.status(200).json(emails);
